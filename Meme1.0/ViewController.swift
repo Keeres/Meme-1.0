@@ -19,7 +19,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     var topTextView: UITextView!
     var bottomTextView: UITextView!
     var memes = [Meme]()
-  //  var delegate: CreateMemeViewControllerDelegate?
     var startedEditing = true
     var finishedEditing = true
     
@@ -51,7 +50,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
     
     override func viewWillDisappear(animated: Bool) {
-        unsubscribeFromKeyboardNotifications()
+    //    unsubscribeFromKeyboardNotifications()
         super.viewWillDisappear(animated)
     }
     
@@ -245,7 +244,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     // MARK: Navigation
     // view controller is signing up to be notified when keyboard will apper
     func subscribeToKeyboardNotifications() {
-        
+        print("ASDF")
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIKeyboardWillShowNotification, object: nil)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIKeyboardWillHideNotification, object: nil)
     }
@@ -260,7 +259,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     // show and shift keyboard when notification is recieved
     func keyboardWillShow(notification: NSNotification) {  //notification annouce information across class
-        
+        print("ASDFasdF")
         if topTextView.isFirstResponder() && startedEditing == true{
             startedEditing = false
         }else if startedEditing == true{
