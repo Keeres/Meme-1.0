@@ -8,59 +8,30 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
+class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextViewDelegate {
     var appDelegate: AppDelegate!
 
-    @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var memeImageView: UIImageView!
     @IBOutlet weak var cameraButton: UIBarButtonItem!
-    @IBOutlet weak var bottomTextView: UITextView!
-    @IBOutlet weak var topTextView: UITextView!
-    @IBOutlet weak var shareButton: UIBarButtonItem!
-
-    var centerPointY:CGFloat?
-    var centerPointX:CGFloat?
-
-   // let memeTextFieldDelegate = MemeTextFieldDelegate()
-    let memeTextViewDelegate = MemeUITextViewDelegate()
-    
-    /*let memeTextAttributes = [
-        NSStrokeColorAttributeName : UIColor.blackColor(),
-        NSForegroundColorAttributeName : UIColor.whiteColor(),
-        NSFontAttributeName : UIFont(name: "HelveticaNeue-CondensedBlack", size: 30.0)!,
-        NSStrokeWidthAttributeName : -5.0
-    ]
-    */
-    let memeAttributeString = NSAttributedString(string: " ", attributes:[NSStrokeColorAttributeName : UIColor.blackColor(),NSForegroundColorAttributeName : UIColor.whiteColor(),NSFontAttributeName : UIFont(name: "HelveticaNeue-CondensedBlack", size: 30.0)!,
-        NSStrokeWidthAttributeName : -5.0])
+ 
+    let imagePicker = UIImagePickerController()
+    let defaultFontSize:CGFloat = 35.0
+    var topTextView: UITextView!
+    var bottomTextView: UITextView!
+    var memes = [Meme]()
+  //  var delegate: CreateMemeViewControllerDelegate?
+    var startedEditing = true
+    var finishedEditing = true
     
     override func viewDidLoad() {
         
         super.viewDidLoad()
         appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-        shareButton.enabled = false;
-     //   let centerPoint = (imageView.frame.size.height - imageView.frame.origin.y)/2 + imageView.frame.origin.y
-        
-     /*   topTextfield.delegate = memeTextFieldDelegate
-        topTextfield.defaultTextAttributes = memeTextAttributes
-        topTextfield.text = "TOP"
-        topTextfield.textAlignment = NSTextAlignment.Center
-        */
-
+        imagePicker.delegate = self
         self.navigationController?.toolbarHidden = false
-        topTextView.delegate = memeTextViewDelegate
-        topTextView.attributedText = memeAttributeString
-        topTextView.textAlignment = NSTextAlignment.Center
-        topTextView.textContainer.maximumNumberOfLines = 2;
-        topTextView.backgroundColor = UIColor.whiteColor().colorWithAlphaComponent(0.0)
-        topTextView.textColor = UIColor.lightGrayColor()
-        topTextView.text = " "
-
-        bottomTextView.delegate = memeTextViewDelegate
-        bottomTextView.attributedText = memeAttributeString
-        bottomTextView.textAlignment = NSTextAlignment.Center
-        bottomTextView.textContainer.maximumNumberOfLines = 2;
-        bottomTextView.backgroundColor = UIColor.whiteColor().colorWithAlphaComponent(0.0)
-        bottomTextView.textColor = UIColor.lightGrayColor()
+        
+        initializeTextView()
+        subscribeToKeyboardNotifications()
     }
     
     override func prefersStatusBarHidden() -> Bool {
@@ -69,47 +40,96 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        subscribeToKeyboardNotifications()
-        cameraButton.enabled = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)
         
-        centerPointY = (imageView.frame.size.height - imageView.frame.origin.y)/2 + imageView.frame.origin.y
-        centerPointX = imageView.frame.size.width/8
-
-        appDelegate.centerPointY = centerPointY
-        appDelegate.centerPointX = centerPointX
-
-        if imageView.image != nil{
-            
-            let scale = imageView.imageScale
-            topTextView.frame.origin.x = centerPointX!
-            bottomTextView.frame.origin.x = centerPointX!
-
-            if imageView.image?.size.height > imageView.image?.size.width{
-                topTextView.frame.origin.y = centerPointY! - imageView.image!.size.height*scale.height/1.9
-            }else{
-                topTextView.frame.origin.y = centerPointY! - imageView.image!.size.height*scale.height
-            }
-print(topTextView.frame.origin.y)
-            if imageView.image?.size.height > imageView.image?.size.width{
-                bottomTextView.frame.origin.y = centerPointY! + imageView.image!.size.height*scale.height/3
-            }else{
-                bottomTextView.frame.origin.y = centerPointY! + imageView.image!.size.height*scale.height/3.6
-            }
-        }
+        // Enables cameraButoon if camera is detecd
+        cameraButton.enabled = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)
     }
-    
-    override func viewWillDisappear(animated: Bool) {
-        super.viewWillDisappear(animated)
-        unsubscribeFromKeyboardNotifications()
-        shareButton.enabled = true
-    }
-    
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
+    
+    override func viewWillDisappear(animated: Bool) {
+        unsubscribeFromKeyboardNotifications()
+        super.viewWillDisappear(animated)
+    }
+    
+    // MARK: Initialize TextView
+    func initializeTextView(){
+        let screenSize: CGRect = UIScreen.mainScreen().bounds
+        topTextView = UITextView(frame: CGRectMake(100, 100, screenSize.width*0.8, 75))
+        topTextView.delegate = self
+        defaultTextProperties(topTextView)
+        topTextView.text = "TOP"
+        topTextView.hidden = true
+        self.view.addSubview(topTextView)
+        
+        bottomTextView = UITextView(frame: CGRectMake(100, 100, screenSize.width*0.8, 75))
+        bottomTextView.delegate = self
+        defaultTextProperties(bottomTextView)
+        bottomTextView.text = "BOTTOM"
+        bottomTextView.hidden = true
+        self.view.addSubview(bottomTextView)
+    }
+    
+    func defaultTextProperties(textView:UITextView){
+        let memeAttributeString = NSAttributedString(string: " ", attributes:[NSStrokeColorAttributeName : UIColor.blackColor(),NSFontAttributeName : UIFont(name: "HelveticaNeue-CondensedBlack", size: defaultFontSize)!,            NSStrokeWidthAttributeName : -5.0])
+        textView.attributedText = memeAttributeString
+        textView.textAlignment = NSTextAlignment.Center
+        textView.textColor = UIColor.lightGrayColor()
+        textView.backgroundColor = nil
+        
+        textView.hidden = false
+        portraitTextViewOrientation(textView)
+        textView.autoresizingMask = [.FlexibleHeight, .FlexibleWidth, .FlexibleBottomMargin, .FlexibleTopMargin, .FlexibleLeftMargin, .FlexibleRightMargin]
+    }
+    
+    
+    func portraitTextViewOrientation(textView:UITextView){
+        let screenSize: CGRect = UIScreen.mainScreen().bounds
+        
+        if textView == self.topTextView{
+            topTextView.center.x = screenSize.width/2
+            topTextView.center.y = screenSize.height*0.2
+        }else if textView == self.bottomTextView{
+            bottomTextView.center.x = screenSize.width/2
+            bottomTextView.center.y = screenSize.height*0.85
+        }
+    }
+    
+    func landscapeTextViewOrientation(textView:UITextView){
+        let screenSize: CGRect = UIScreen.mainScreen().bounds
+        
+        if textView == self.topTextView{
+            topTextView.center.x = screenSize.width/2
+            topTextView.center.y = screenSize.height*0.2
+        }else if textView == self.bottomTextView{
+            bottomTextView.center.x = screenSize.width/2
+            bottomTextView.center.y = screenSize.height*0.8
+        }
+    }
+    
+    // MARK: Orientation
+    override func didRotateFromInterfaceOrientation(fromInterfaceOrientation: UIInterfaceOrientation) {
+        switch UIDevice.currentDevice().orientation{
+        case .Portrait:
+            portraitTextViewOrientation(topTextView)
+            portraitTextViewOrientation(bottomTextView)
+        case .PortraitUpsideDown:
+            portraitTextViewOrientation(topTextView)
+            portraitTextViewOrientation(bottomTextView)
+        case .LandscapeLeft:
+            landscapeTextViewOrientation(topTextView)
+            landscapeTextViewOrientation(bottomTextView)
+        case .LandscapeRight:
+            landscapeTextViewOrientation(topTextView)
+            landscapeTextViewOrientation(bottomTextView)
+        default:
+            portraitTextViewOrientation(topTextView)
+            portraitTextViewOrientation(bottomTextView)        }
+    }
+    
     // GERATE MEME
     func generateMemedImage() -> UIImage
     {
@@ -130,62 +150,104 @@ print(topTextView.frame.origin.y)
         return memedImage
     }
     
-    // BUTTONS
-    @IBAction func cameraButton(sender: AnyObject) {
-        let pickImageController = UIImagePickerController()
-        pickImageController.delegate = self
-        pickImageController.sourceType = UIImagePickerControllerSourceType.Camera
-        self.presentViewController(pickImageController, animated: true, completion: nil)
-    }
-
-    @IBAction func cancelButton(sender: AnyObject) {
-        NSNotificationCenter.defaultCenter().postNotificationName("load", object: nil)
-
-        self.navigationController?.popViewControllerAnimated(true)
-    }
-
-    @IBAction func AlbumButton(sender: AnyObject) {
-        let pickImageController = UIImagePickerController()
-        pickImageController.delegate = self
-        pickImageController.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-        self.presentViewController(pickImageController, animated: true, completion: nil)
-    }
+    // MARK: Buttons
     
-    @IBAction func shareButton(sender: AnyObject) {
+    @IBAction func actionButton(sender: AnyObject) {
         let memeImage = generateMemedImage()
-        
-        let activityViewControler = UIActivityViewController(activityItems:[memeImage], applicationActivities: nil)
-       // self.presentViewController(activityViewControler, animated: true, completion: nil)
-        self.presentViewController(activityViewControler, animated: true, completion: {
-            //Create the meme
-            let meme = Meme(topText: self.topTextView.text, bottomText: self.bottomTextView.text, image: self.imageView.image!, memedImage: memeImage)
-            let object = UIApplication.sharedApplication().delegate
-            let appDelegate = object as! AppDelegate
-            appDelegate.memes.append(meme)
+        let actionController = UIActivityViewController(activityItems: [memeImage], applicationActivities: nil)
+        self.presentViewController(actionController, animated: true, completion: {
             
+            //Create the meme
+            let meme = Meme(topText: self.topTextView.text, bottomText: self.bottomTextView.text, image: self.memeImageView.image!, memedImage: memeImage)
+            
+            self.memes.append(meme)
+            
+             let object = UIApplication.sharedApplication().delegate
+            let appDelegate = object as! AppDelegate
+             appDelegate.memes.append(meme)
         })
-
     }
     
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
-        imageView.image = image
-        imageView.contentMode = .ScaleAspectFit;
-        topTextView.text = "TOP"
-        bottomTextView.text = "BOTTOM"
-        topTextView.textColor = UIColor.lightGrayColor()
-        bottomTextView.textColor = UIColor.lightGrayColor()
+    @IBAction func albumButton(sender: AnyObject) {
+        imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+        presentViewController(imagePicker, animated: true, completion: nil)
         
+    }
+    
+    @IBAction func cameraButton(sender: AnyObject) {
+        imagePicker.sourceType = UIImagePickerControllerSourceType.Camera
+        presentViewController(imagePicker, animated: true, completion: nil)
+    }
+    
+    @IBAction func cancelButton(sender: AnyObject) {
+       memeImageView.image = nil
+        topTextView.hidden = true
+        bottomTextView.hidden = true
+    }
+    
+    // MARK: ImagePicker Delegate
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
+        memeImageView.image = image
+        memeImageView.contentMode = .ScaleAspectFill
+        topTextView.hidden = false
+        bottomTextView.hidden = false
         dismissViewControllerAnimated(true, completion: nil)
     }
-
     
+    // MARK: TextView Delegate
+    func textViewDidBeginEditing(textView: UITextView) {
+        startedEditing = true
+        
+        if textView == self.topTextView{
+            topTextView.text = nil
+            topTextView.textColor = UIColor.whiteColor()
+            topTextView.becomeFirstResponder()
+        }
+        if textView == self.bottomTextView{
+            bottomTextView.text = nil
+            bottomTextView.textColor = UIColor.whiteColor()
+            bottomTextView.becomeFirstResponder()
+        }
+    }
     
-    // NOTIFICATIONS
+    func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
+        if text == "\n" {
+            textView.resignFirstResponder()
+            // Return FALSE so that the final '\n' character doesn't get added
+            return false
+        }
+        
+        if (textView.contentSize.height > textView.frame.size.height) {
+            var fontDecrement:CGFloat = 1.0;
+            while (textView.contentSize.height > textView.frame.size.height) {
+                textView.font = UIFont(name: "HelveticaNeue-CondensedBlack", size: defaultFontSize-fontDecrement)
+                fontDecrement++;
+            }
+            return true
+        }
+        
+        return true
+    }
+    
+    func textViewDidEndEditing(textView: UITextView) {
+        finishedEditing = true
+        
+        if textView == topTextView && topTextView.text.isEmpty{
+            textView.text = "TOP"
+            textView.textColor = UIColor.lightGrayColor()
+        }
+        if textView == bottomTextView && bottomTextView.text.isEmpty{
+            textView.text = "Bottom"
+            textView.textColor = UIColor.lightGrayColor()
+        }
+    }
+    
+    // MARK: Navigation
     // view controller is signing up to be notified when keyboard will apper
     func subscribeToKeyboardNotifications() {
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillShow:", name: UIKeyboardWillShowNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillHide:", name: UIKeyboardWillHideNotification, object: nil)
-
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIKeyboardWillShowNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIKeyboardWillHideNotification, object: nil)
     }
     
     // view controller unsubscribes notification when keyboard will disapper
@@ -195,17 +257,33 @@ print(topTextView.frame.origin.y)
         NSNotificationCenter.defaultCenter().removeObserver(self, name:
             UIKeyboardWillHideNotification, object: nil)
     }
-   
+    
     // show and shift keyboard when notification is recieved
     func keyboardWillShow(notification: NSNotification) {  //notification annouce information across class
-        if bottomTextView.isFirstResponder(){
+        
+        if topTextView.isFirstResponder() && startedEditing == true{
+            startedEditing = false
+        }else if startedEditing == true{
+            print("before")
+            print(view.frame.origin.y)
+            
             view.frame.origin.y -= getKeyboardHeight(notification) //origin is top of the view
+            print("after")
+            print(view.frame.origin.y)
+            startedEditing = false
         }
     }
     
     func keyboardWillHide(notification: NSNotification) {  //notification annouce information across class
-        if bottomTextView.isFirstResponder(){
+        
+        if topTextView.isFirstResponder() && finishedEditing == true{
+            finishedEditing = false
+        }else if finishedEditing == true{
             view.frame.origin.y += getKeyboardHeight(notification) //origin is top of the view
+            print("end")
+            print(view.frame.origin.y)
+            
+            finishedEditing = false
         }
     }
     
@@ -213,6 +291,7 @@ print(topTextView.frame.origin.y)
         //notification carries information inside userInfo dictionary
         let userInfo = notification.userInfo
         let keyboardSize = userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue // of CGRect
+        print(keyboardSize.CGRectValue().height)
         return keyboardSize.CGRectValue().height
     }
 }
