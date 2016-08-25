@@ -29,6 +29,8 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         NSStrokeWidthAttributeName : -5.0
     ]
     
+    enum ButtonType: Int { case Camera = 0, Album }
+
     override func viewDidLoad() {
         
         super.viewDidLoad()
@@ -106,15 +108,16 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
              appDelegate.memes.append(meme)
         })
     }
-    
-    @IBAction func albumButton(sender: AnyObject) {
-        imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-        presentViewController(imagePicker, animated: true, completion: nil)
+    @IBAction func selectImage(sender: AnyObject) {
         
-    }
-    
-    @IBAction func cameraButton(sender: AnyObject) {
-        imagePicker.sourceType = UIImagePickerControllerSourceType.Camera
+        switch (ButtonType(rawValue: sender.tag)!) {
+        case .Camera:
+            imagePicker.sourceType = UIImagePickerControllerSourceType.Camera
+            
+        case .Album:
+            imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+        }
+        
         presentViewController(imagePicker, animated: true, completion: nil)
     }
     
@@ -167,7 +170,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         }
     }
     
-    func textFieldShouldReturn(textField: UITextField!) -> Bool {   //delegate method
+    func textFieldShouldReturn(textField: UITextField) -> Bool {   //delegate method
         textField.resignFirstResponder()
         return true
     }

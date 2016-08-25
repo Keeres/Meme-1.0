@@ -69,13 +69,13 @@
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="jz2-4R-zut"/>
                         <barButtonItem title="Item" systemItem="camera" id="vjU-SJ-7tb">
                             <connections>
-                                <action selector="cameraButton:" destination="BYZ-38-t0r" id="UKv-tF-q1Y"/>
+                                <action selector="selectImage:" destination="BYZ-38-t0r" id="cEj-Je-blo"/>
                             </connections>
                         </barButtonItem>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="P4l-Jl-s63"/>
-                        <barButtonItem title="Album" id="m5v-id-K2g">
+                        <barButtonItem tag="1" title="Album" id="m5v-id-K2g" userLabel="Album Button">
                             <connections>
-                                <action selector="albumButton:" destination="BYZ-38-t0r" id="phG-aC-oew"/>
+                                <action selector="selectImage:" destination="BYZ-38-t0r" id="VwE-IO-Fw8"/>
                             </connections>
                         </barButtonItem>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="dDf-kr-Zb3"/>
