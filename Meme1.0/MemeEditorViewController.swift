@@ -8,28 +8,38 @@
 
 import UIKit
 
-class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextViewDelegate {
+class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
     var appDelegate: AppDelegate!
 
     @IBOutlet weak var memeImageView: UIImageView!
     @IBOutlet weak var cameraButton: UIBarButtonItem!
+    @IBOutlet weak var topTextField: UITextField!
+    @IBOutlet weak var bottomTextField: UITextField!
  
     let imagePicker = UIImagePickerController()
     let defaultFontSize:CGFloat = 35.0
-    var topTextView: UITextView!
-    var bottomTextView: UITextView!
     var memes = [Meme]()
     var startedEditing = true
     var finishedEditing = true
+    
+    let memeTextAttributes = [
+        NSStrokeColorAttributeName : UIColor.blackColor(),
+        NSForegroundColorAttributeName : UIColor.whiteColor(),
+        NSFontAttributeName : UIFont(name: "HelveticaNeue-Bold", size: 40)!,
+        NSStrokeWidthAttributeName : -5.0
+    ]
     
     override func viewDidLoad() {
         
         super.viewDidLoad()
         appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         imagePicker.delegate = self
+        topTextField.delegate = self
+        bottomTextField.delegate = self
         self.navigationController?.toolbarHidden = false
         
-        initializeTextView()
+        initializeTextField(topTextField)
+        initializeTextField(bottomTextField)
         subscribeToKeyboardNotifications()
     }
     
@@ -55,83 +65,13 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     }
     
     // MARK: Initialize TextView
-    func initializeTextView(){
-        let screenSize: CGRect = UIScreen.mainScreen().bounds
-        topTextView = UITextView(frame: CGRectMake(100, 100, screenSize.width*0.8, 75))
-        topTextView.delegate = self
-        defaultTextProperties(topTextView)
-        topTextView.text = "TOP"
-        topTextView.hidden = true
-        self.view.addSubview(topTextView)
-        
-        bottomTextView = UITextView(frame: CGRectMake(100, 100, screenSize.width*0.8, 75))
-        bottomTextView.delegate = self
-        defaultTextProperties(bottomTextView)
-        bottomTextView.text = "BOTTOM"
-        bottomTextView.hidden = true
-        self.view.addSubview(bottomTextView)
+    func initializeTextField(textField: UITextField){
+        textField.defaultTextAttributes = memeTextAttributes
+        textField.textAlignment = NSTextAlignment.Center
     }
     
-    func defaultTextProperties(textView:UITextView){
-        let memeAttributeString = NSAttributedString(string: " ", attributes:[NSStrokeColorAttributeName : UIColor.blackColor(),NSFontAttributeName : UIFont(name: "HelveticaNeue-CondensedBlack", size: defaultFontSize)!,            NSStrokeWidthAttributeName : -5.0])
-        textView.attributedText = memeAttributeString
-        textView.textAlignment = NSTextAlignment.Center
-        textView.textColor = UIColor.lightGrayColor()
-        textView.backgroundColor = nil
-        
-        textView.hidden = false
-        portraitTextViewOrientation(textView)
-        textView.autoresizingMask = [.FlexibleHeight, .FlexibleWidth, .FlexibleBottomMargin, .FlexibleTopMargin, .FlexibleLeftMargin, .FlexibleRightMargin]
-    }
-    
-    
-    func portraitTextViewOrientation(textView:UITextView){
-        let screenSize: CGRect = UIScreen.mainScreen().bounds
-        
-        if textView == self.topTextView{
-            topTextView.center.x = screenSize.width/2
-            topTextView.center.y = screenSize.height*0.2
-        }else if textView == self.bottomTextView{
-            bottomTextView.center.x = screenSize.width/2
-            bottomTextView.center.y = screenSize.height*0.85
-        }
-    }
-    
-    func landscapeTextViewOrientation(textView:UITextView){
-        let screenSize: CGRect = UIScreen.mainScreen().bounds
-        
-        if textView == self.topTextView{
-            topTextView.center.x = screenSize.width/2
-            topTextView.center.y = screenSize.height*0.2
-        }else if textView == self.bottomTextView{
-            bottomTextView.center.x = screenSize.width/2
-            bottomTextView.center.y = screenSize.height*0.8
-        }
-    }
-    
-    // MARK: Orientation
-    override func didRotateFromInterfaceOrientation(fromInterfaceOrientation: UIInterfaceOrientation) {
-        switch UIDevice.currentDevice().orientation{
-        case .Portrait:
-            portraitTextViewOrientation(topTextView)
-            portraitTextViewOrientation(bottomTextView)
-        case .PortraitUpsideDown:
-            portraitTextViewOrientation(topTextView)
-            portraitTextViewOrientation(bottomTextView)
-        case .LandscapeLeft:
-            landscapeTextViewOrientation(topTextView)
-            landscapeTextViewOrientation(bottomTextView)
-        case .LandscapeRight:
-            landscapeTextViewOrientation(topTextView)
-            landscapeTextViewOrientation(bottomTextView)
-        default:
-            portraitTextViewOrientation(topTextView)
-            portraitTextViewOrientation(bottomTextView)        }
-    }
-    
-    // GERATE MEME
-    func generateMemedImage() -> UIImage
-    {
+     // GERATE MEME
+    func generateMemedImage() -> UIImage{
         self.navigationController?.navigationBarHidden = true
         self.navigationController?.toolbarHidden = true
         
@@ -157,7 +97,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         self.presentViewController(actionController, animated: true, completion: {
             
             //Create the meme
-            let meme = Meme(topText: self.topTextView.text, bottomText: self.bottomTextView.text, image: self.memeImageView.image!, memedImage: memeImage)
+            let meme = Meme(topText: self.topTextField.text!, bottomText: self.bottomTextField.text!, image: self.memeImageView.image!, memedImage: memeImage)
             
             self.memes.append(meme)
             
@@ -180,65 +120,56 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     
     @IBAction func cancelButton(sender: AnyObject) {
        memeImageView.image = nil
-        topTextView.hidden = true
-        bottomTextView.hidden = true
+        topTextField.text = "TOP"
+        bottomTextField.text = "BOTTOM"
     }
     
     // MARK: ImagePicker Delegate
     func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
         memeImageView.image = image
-        memeImageView.contentMode = .ScaleAspectFill
-        topTextView.hidden = false
-        bottomTextView.hidden = false
+        memeImageView.contentMode = .ScaleAspectFit
         dismissViewControllerAnimated(true, completion: nil)
     }
-    
-    // MARK: TextView Delegate
-    func textViewDidBeginEditing(textView: UITextView) {
-        startedEditing = true
-        
-        if textView == self.topTextView{
-            topTextView.text = nil
-            topTextView.textColor = UIColor.whiteColor()
-            topTextView.becomeFirstResponder()
-        }
-        if textView == self.bottomTextView{
-            bottomTextView.text = nil
-            bottomTextView.textColor = UIColor.whiteColor()
-            bottomTextView.becomeFirstResponder()
-        }
-    }
-    
-    func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
-        if text == "\n" {
-            textView.resignFirstResponder()
-            // Return FALSE so that the final '\n' character doesn't get added
-            return false
-        }
-        
-        if (textView.contentSize.height > textView.frame.size.height) {
-            var fontDecrement:CGFloat = 1.0;
-            while (textView.contentSize.height > textView.frame.size.height) {
-                textView.font = UIFont(name: "HelveticaNeue-CondensedBlack", size: defaultFontSize-fontDecrement)
-                fontDecrement++;
-            }
-            return true
-        }
-        
+    func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
         return true
     }
+    // MARK: TextField Delegate
+    func textFieldDidBeginEditing(textField: UITextField) {
+        startedEditing = true
+        
+        if textField == self.topTextField{
+            topTextField.text = nil
+            topTextField.becomeFirstResponder()
+        }
+        if textField == self.bottomTextField{
+            bottomTextField.text = nil
+            bottomTextField.becomeFirstResponder()
+        }
+    }
+    func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
+     /*   if text == "\n" {
+            textField.resignFirstResponder()
+            // Return FALSE so that the final '\n' character doesn't get added
+            return false
+        }*/
+        return true
+    }
+  
     
-    func textViewDidEndEditing(textView: UITextView) {
+    func textFieldDidEndEditing(textField: UITextField) {
+        
         finishedEditing = true
         
-        if textView == topTextView && topTextView.text.isEmpty{
-            textView.text = "TOP"
-            textView.textColor = UIColor.lightGrayColor()
+        if textField == topTextField && topTextField.text!.isEmpty{
+            textField.text = "TOP"
+        }else if textField == bottomTextField && bottomTextField.text!.isEmpty{
+            textField.text = "Bottom"
         }
-        if textView == bottomTextView && bottomTextView.text.isEmpty{
-            textView.text = "Bottom"
-            textView.textColor = UIColor.lightGrayColor()
-        }
+    }
+    
+    func textFieldShouldReturn(textField: UITextField!) -> Bool {   //delegate method
+        textField.resignFirstResponder()
+        return true
     }
     
     // MARK: Navigation
@@ -260,7 +191,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     // show and shift keyboard when notification is recieved
     func keyboardWillShow(notification: NSNotification) {  //notification annouce information across class
         print("ASDFasdF")
-        if topTextView.isFirstResponder() && startedEditing == true{
+        if topTextField.isFirstResponder() && startedEditing == true{
             startedEditing = false
         }else if startedEditing == true{
             print("before")
@@ -275,7 +206,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     
     func keyboardWillHide(notification: NSNotification) {  //notification annouce information across class
         
-        if topTextView.isFirstResponder() && finishedEditing == true{
+        if topTextField.isFirstResponder() && finishedEditing == true{
             finishedEditing = false
         }else if finishedEditing == true{
             view.frame.origin.y += getKeyboardHeight(notification) //origin is top of the view
