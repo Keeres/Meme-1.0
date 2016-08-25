@@ -91,23 +91,31 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         return memedImage
     }
     
+    func createMeme(memeImage: UIImage) -> Meme{
+        //Create the meme
+        let meme = Meme(topText: self.topTextField.text!, bottomText: self.bottomTextField.text!, origianlImage: self.memeImageView.image!, memeImage: memeImage)
+        
+        self.memes.append(meme)
+        
+        return meme
+    }
     // MARK: Buttons
     
     @IBAction func actionButton(sender: AnyObject) {
         let memeImage = generateMemedImage()
         let actionController = UIActivityViewController(activityItems: [memeImage], applicationActivities: nil)
-        self.presentViewController(actionController, animated: true, completion: {
+        
+        actionController.completionWithItemsHandler = { (activity, success, items, error) in
+            let meme = self.createMeme(memeImage)
             
-            //Create the meme
-            let meme = Meme(topText: self.topTextField.text!, bottomText: self.bottomTextField.text!, image: self.memeImageView.image!, memedImage: memeImage)
-            
-            self.memes.append(meme)
-            
-             let object = UIApplication.sharedApplication().delegate
+            let object = UIApplication.sharedApplication().delegate
             let appDelegate = object as! AppDelegate
-             appDelegate.memes.append(meme)
-        })
+            appDelegate.memes.append(meme)
+        }
+
+        self.presentViewController(actionController, animated: true, completion:nil)
     }
+    
     @IBAction func selectImage(sender: AnyObject) {
         
         switch (ButtonType(rawValue: sender.tag)!) {
@@ -150,11 +158,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         }
     }
     func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
-     /*   if text == "\n" {
-            textField.resignFirstResponder()
-            // Return FALSE so that the final '\n' character doesn't get added
-            return false
-        }*/
+        
         return true
     }
   
@@ -178,7 +182,6 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     // MARK: Navigation
     // view controller is signing up to be notified when keyboard will apper
     func subscribeToKeyboardNotifications() {
-        print("ASDF")
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIKeyboardWillShowNotification, object: nil)
             NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIKeyboardWillHideNotification, object: nil)
     }
@@ -193,16 +196,11 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     
     // show and shift keyboard when notification is recieved
     func keyboardWillShow(notification: NSNotification) {  //notification annouce information across class
-        print("ASDFasdF")
+
         if topTextField.isFirstResponder() && startedEditing == true{
             startedEditing = false
         }else if startedEditing == true{
-            print("before")
-            print(view.frame.origin.y)
-            
             view.frame.origin.y -= getKeyboardHeight(notification) //origin is top of the view
-            print("after")
-            print(view.frame.origin.y)
             startedEditing = false
         }
     }
@@ -213,7 +211,6 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
             finishedEditing = false
         }else if finishedEditing == true{
             view.frame.origin.y += getKeyboardHeight(notification) //origin is top of the view
-            print("end")
             print(view.frame.origin.y)
             
             finishedEditing = false
@@ -224,7 +221,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         //notification carries information inside userInfo dictionary
         let userInfo = notification.userInfo
         let keyboardSize = userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue // of CGRect
-        print(keyboardSize.CGRectValue().height)
+        
         return keyboardSize.CGRectValue().height
     }
 }
