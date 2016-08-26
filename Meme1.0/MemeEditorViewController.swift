@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MemeEditorViewController.swift
 //  Meme1.0
 //
 //  Created by Steven Chen on 2/22/16.
@@ -15,6 +15,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     @IBOutlet weak var cameraButton: UIBarButtonItem!
     @IBOutlet weak var topTextField: UITextField!
     @IBOutlet weak var bottomTextField: UITextField!
+    @IBOutlet weak var actionButton: UIBarButtonItem!
  
     let imagePicker = UIImagePickerController()
     let defaultFontSize:CGFloat = 35.0
@@ -39,7 +40,8 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         topTextField.delegate = self
         bottomTextField.delegate = self
         self.navigationController?.toolbarHidden = false
-        
+        actionButton.enabled = false
+
         initializeTextField(topTextField)
         initializeTextField(bottomTextField)
         subscribeToKeyboardNotifications()
@@ -56,13 +58,8 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         cameraButton.enabled = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)
     }
     
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
     override func viewWillDisappear(animated: Bool) {
-    //    unsubscribeFromKeyboardNotifications()
+        unsubscribeFromKeyboardNotifications()
         super.viewWillDisappear(animated)
     }
     
@@ -91,14 +88,22 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         return memedImage
     }
     
+    // Create meme
     func createMeme(memeImage: UIImage) -> Meme{
-        //Create the meme
         let meme = Meme(topText: self.topTextField.text!, bottomText: self.bottomTextField.text!, origianlImage: self.memeImageView.image!, memeImage: memeImage)
         
         self.memes.append(meme)
         
         return meme
     }
+    
+    // Save meme
+    func saveMeme(meme:Meme){
+        let object = UIApplication.sharedApplication().delegate
+        let appDelegate = object as! AppDelegate
+        appDelegate.memes.append(meme)
+    }
+    
     // MARK: Buttons
     
     @IBAction func actionButton(sender: AnyObject) {
@@ -107,10 +112,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         
         actionController.completionWithItemsHandler = { (activity, success, items, error) in
             let meme = self.createMeme(memeImage)
-            
-            let object = UIApplication.sharedApplication().delegate
-            let appDelegate = object as! AppDelegate
-            appDelegate.memes.append(meme)
+            self.saveMeme(meme)
         }
 
         self.presentViewController(actionController, animated: true, completion:nil)
@@ -139,12 +141,17 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
         memeImageView.image = image
         memeImageView.contentMode = .ScaleAspectFit
+        print("ASDF")
+        actionButton.enabled = true
+        
         dismissViewControllerAnimated(true, completion: nil)
     }
+    
+    // MARK: TextField Delegate
     func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
         return true
     }
-    // MARK: TextField Delegate
+    
     func textFieldDidBeginEditing(textField: UITextField) {
         startedEditing = true
         
@@ -157,12 +164,12 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
             bottomTextField.becomeFirstResponder()
         }
     }
+    
     func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
         
         return true
     }
   
-    
     func textFieldDidEndEditing(textField: UITextField) {
         
         finishedEditing = true

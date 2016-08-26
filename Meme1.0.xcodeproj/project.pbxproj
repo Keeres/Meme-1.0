@@ -14,7 +14,6 @@
 		AD13E6E21C7BD84B00F5E7CA /* Meme1_0Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD13E6E11C7BD84B00F5E7CA /* Meme1_0Tests.swift */; };
 		AD13E6ED1C7BD84B00F5E7CA /* Meme1_0UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD13E6EC1C7BD84B00F5E7CA /* Meme1_0UITests.swift */; };
 		AD13E6FB1C7C035C00F5E7CA /* UIViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD13E6FA1C7C035C00F5E7CA /* UIViewExtension.swift */; };
-		AD13E6FF1C7D127800F5E7CA /* MemeUITextViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD13E6FE1C7D127800F5E7CA /* MemeUITextViewDelegate.swift */; };
 		AD13E7011C7E2F2D00F5E7CA /* Meme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD13E7001C7E2F2D00F5E7CA /* Meme.swift */; };
 		AD5FCFE01C8F8280005E9A52 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AD13E6D01C7BD84B00F5E7CA /* Main.storyboard */; };
 /* End PBXBuildFile section */
@@ -51,7 +50,6 @@
 		AD13E6EC1C7BD84B00F5E7CA /* Meme1_0UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meme1_0UITests.swift; sourceTree = "<group>"; };
 		AD13E6EE1C7BD84B00F5E7CA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AD13E6FA1C7C035C00F5E7CA /* UIViewExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIViewExtension.swift; sourceTree = "<group>"; };
-		AD13E6FE1C7D127800F5E7CA /* MemeUITextViewDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemeUITextViewDelegate.swift; sourceTree = "<group>"; };
 		AD13E7001C7E2F2D00F5E7CA /* Meme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Meme.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -111,7 +109,6 @@
 				AD13E6D51C7BD84B00F5E7CA /* LaunchScreen.storyboard */,
 				AD13E6D81C7BD84B00F5E7CA /* Info.plist */,
 				AD13E6FA1C7C035C00F5E7CA /* UIViewExtension.swift */,
-				AD13E6FE1C7D127800F5E7CA /* MemeUITextViewDelegate.swift */,
 			);
 			path = Meme1.0;
 			sourceTree = "<group>";
@@ -266,7 +263,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AD13E7011C7E2F2D00F5E7CA /* Meme.swift in Sources */,
-				AD13E6FF1C7D127800F5E7CA /* MemeUITextViewDelegate.swift in Sources */,
 				AD13E6FB1C7C035C00F5E7CA /* UIViewExtension.swift in Sources */,
 				AD13E6CF1C7BD84B00F5E7CA /* MemeEditorViewController.swift in Sources */,
 				AD13E6CD1C7BD84B00F5E7CA /* AppDelegate.swift in Sources */,

@@ -94,6 +94,7 @@
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
+                        <outlet property="actionButton" destination="EFj-Gt-2Y9" id="dGX-Z0-0Wr"/>
                         <outlet property="bottomTextField" destination="KvY-bH-tsQ" id="0Fr-JA-sDB"/>
                         <outlet property="cameraButton" destination="vjU-SJ-7tb" id="mV9-kI-jty"/>
                         <outlet property="memeImageView" destination="i9x-fO-HxR" id="zBS-eM-2Dq"/>
