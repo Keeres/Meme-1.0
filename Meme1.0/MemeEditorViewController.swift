@@ -18,7 +18,6 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     @IBOutlet weak var actionButton: UIBarButtonItem!
  
     let imagePicker = UIImagePickerController()
-    let defaultFontSize:CGFloat = 35.0
     var memes = [Meme]()
     var startedEditing = true
     var finishedEditing = true
@@ -63,7 +62,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         super.viewWillDisappear(animated)
     }
     
-    // MARK: Initialize TextView
+    // MARK: Initialize TextField
     func initializeTextField(textField: UITextField){
         textField.defaultTextAttributes = memeTextAttributes
         textField.textAlignment = NSTextAlignment.Center
@@ -141,7 +140,6 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
         memeImageView.image = image
         memeImageView.contentMode = .ScaleAspectFit
-        print("ASDF")
         actionButton.enabled = true
         
         dismissViewControllerAnimated(true, completion: nil)
