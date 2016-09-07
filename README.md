@@ -1,4 +1,4 @@
-# Project Name MEME 1.0
+# MEME 1.0
 
 A frist version of the app that takes pictures and overlays text to make memes out of friends, family, or pets. 
 Also allows sharing with others via social media or email.
